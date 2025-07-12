@@ -1,0 +1,40 @@
+body { margin: 0; padding: 0; font-family: sans-serif; background-image: url('https://cdn.pixabay.com/photo/2016/08/06/19/07/salad-1574977_1280.jpg'); background-repeat: no-repeat; background-size: cover; background-position: center; background-attachment: fixed; min-height: 100vh; display: flex; justify-content: center; align-items: center; flex-direction: column; }
+
+.form-container { background-color: rgba(255, 255, 255, 0.9); padding: 30px; border-radius: 15px; max-width: 480px; width: 90%; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); }
+
+h1, h2 { text-align: center; color: #2e7d32; }
+
+form { display: flex; flex-direction: column; }
+
+input, button, label { margin-top: 10px; font-size: 16px; }
+
+input { padding: 10px; border-radius: 8px; border: 1px solid #ccc; }
+
+button { padding: 12px; background-color: #66bb6a; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+
+button:hover { background-color: #388e3c; }
+
+a { text-align: center; color: #2e7d32; text-decoration: none; }
+
+a:hover { text-decoration: underline; }
+
+ul { padding-left: 0; list-style-type: none; }
+
+ul li { background: #f1f8e9; border: 1px solid #aed581; padding: 8px 12px; margin-bottom: 6px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; color: #33691e; }
+
+.delete-btn { background-color: #ef5350; color: white; border: none; border-radius: 6px; padding: 5px 8px; font-size: 12px; cursor: pointer; }
+
+.header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+
+.veg-gallery { margin-top: 25px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+
+.veg-gallery img { width: 50px; height: 50px; transition: transform 0.3s ease; }
+
+.veg-gallery img:hover { transform: scale(1.2); }
+
+.recipe-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-top: 20px; }
+
+.recipe-card { background: #fffde7; border-left: 5px solid #f57f17; padding: 10px; border-radius: 10px; text-align: center; box-shadow: 0 3px 8px rgba(0,0,0,0.1); }
+
+.recipe-card img { border-radius: 8px; margin-top: 5px; width: 100%; max-width: 150px; }
+
