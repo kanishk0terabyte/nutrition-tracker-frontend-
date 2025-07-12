@@ -5,6 +5,76 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Login - Nutrition Tracker</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Basic fallback styles if style.css not loading */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f3f3f3;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .page-heading {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .form-container {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      max-width: 350px;
+      width: 90%;
+      text-align: center;
+    }
+    .form-container h2 {
+      margin-bottom: 15px;
+    }
+    .form-container input {
+      width: 90%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    .form-container button {
+      width: 95%;
+      padding: 10px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .form-container button:hover {
+      background-color: #218838;
+    }
+    .veg-image {
+      width: 80px;
+      margin-bottom: 10px;
+    }
+    .veg-gallery {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    .veg-gallery img {
+      width: 40px;
+      height: 40px;
+    }
+    a {
+      color: #007bff;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
   <div class="page-heading">
@@ -12,11 +82,11 @@
   </div>
 
   <div class="form-container">
-    <img src="https://cdn-icons-png.flaticon.com/512/2909/2909767.png" class="veg-image" alt="Veg Icon">
+    <img src="https://cdn-icons-png.flaticon.com/512/2909/2909767.png" class="veg-image" alt="Vegetable Icon">
     <h2>Login</h2>
     <form id="login-form">
-      <input type="email" placeholder="Email" required />
-      <input type="password" placeholder="Password" required />
+      <input type="email" name="email" placeholder="Email" required />
+      <input type="password" name="password" placeholder="Password" required />
       <button type="submit">Login</button>
       <p>Don't have an account? <a href="register.html">Register here</a></p>
     </form>
@@ -28,5 +98,35 @@
       <img src="https://cdn-icons-png.flaticon.com/512/590/590682.png" alt="Spinach">
     </div>
   </div>
+
+  <!-- Optional: Add your JS here -->
+  <script>
+    document.getElementById('login-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const email = e.target.email.value;
+      const password = e.target.password.value;
+
+      try {
+        const res = await fetch('https://your-backend-url.com/api/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          localStorage.setItem('token', data.token);
+          window.location.href = 'pantry.html'; // redirect after login
+        } else {
+          alert(data.message || 'Login failed');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Something went wrong');
+      }
+    });
+  </script>
 </body>
 </html>
