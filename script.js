@@ -1,5 +1,5 @@
-// Set your backend API URL  
 const API_URL = 'https://nutrition-tracker-backend-bxb5.onrender.com/api';
+const SPOONACULAR_API_KEY = 'fbef567962a54a2faf62c8b6ff833370';
 
 // -------------------- Register --------------------
 const registerForm = document.getElementById("register-form");
@@ -84,7 +84,10 @@ function renderPantry() {
 
   pantry.forEach((item, index) => {
     const li = document.createElement("li");
-    li.innerHTML = `${item.ingredient} - ${item.quantity} <button class='delete-btn' data-index='${index}'>❌</button>`;
+    li.innerHTML = `
+      ${item.ingredient} - ${item.quantity}
+      <button class='delete-btn' data-index='${index}'>❌</button>
+    `;
     pantryList.appendChild(li);
   });
 
@@ -103,15 +106,17 @@ if (addForm) {
   renderPantry();
   addForm.addEventListener("submit", (e) => {
     e.preventDefault();
-    const ingredient = document.getElementById("ingredient").value;
-    const quantity = document.getElementById("quantity").value;
+    const ingredient = document.getElementById("ingredient").value.trim();
+    const quantity = document.getElementById("quantity").value.trim();
 
-    const pantry = JSON.parse(localStorage.getItem("pantry")) || [];
-    pantry.push({ ingredient, quantity });
-    localStorage.setItem("pantry", JSON.stringify(pantry));
+    if (ingredient && quantity) {
+      const pantry = JSON.parse(localStorage.getItem("pantry")) || [];
+      pantry.push({ ingredient, quantity });
+      localStorage.setItem("pantry", JSON.stringify(pantry));
 
-    addForm.reset();
-    renderPantry();
+      addForm.reset();
+      renderPantry();
+    }
   });
 }
 
@@ -134,13 +139,13 @@ if (submitBtn) {
   });
 }
 
-// -------------------- Recipes --------------------
+// -------------------- Recipes Page --------------------
 const recipeResults = document.getElementById("recipeResults");
 if (recipeResults) {
   const pantry = JSON.parse(localStorage.getItem("pantry")) || [];
   const ingredients = pantry.map(item => item.ingredient).join(",");
 
-  fetch(`https://api.spoonacular.com/recipes/findByIngredients?ingredients=${ingredients}&number=10&ranking=1&ignorePantry=true&apiKey=fbef567962a54a2faf62c8b6ff833370`)
+  fetch(`https://api.spoonacular.com/recipes/findByIngredients?ingredients=${ingredients}&number=10&ranking=1&ignorePantry=true&apiKey=${SPOONACULAR_API_KEY}`)
     .then(res => res.json())
     .then(data => {
       if (data.length === 0) {
@@ -148,13 +153,16 @@ if (recipeResults) {
         return;
       }
 
-      recipeResults.innerHTML = "<div class='recipe-list'>" +
-        data.map((recipe, index) => `
-          <div class='recipe-card' onclick="window.location.href='recipe-detail.html?id=${recipe.id}'">
-            <strong>${index + 1}. ${recipe.title}</strong>
-            <img src="${recipe.image}" alt="${recipe.title}"/>
-          </div>
-        `).join("") + "</div>";
+      recipeResults.innerHTML = `
+        <div class='recipe-list'>
+          ${data.map((recipe, index) => `
+            <div class='recipe-card' onclick="window.location.href='recipe-detail.html?id=${recipe.id}'">
+              <strong>${index + 1}. ${recipe.title}</strong>
+              <img src="${recipe.image}" alt="${recipe.title}"/>
+            </div>
+          `).join("")}
+        </div>
+      `;
     })
     .catch(err => {
       console.error("API Error:", err);
@@ -162,7 +170,7 @@ if (recipeResults) {
     });
 }
 
-// -------------------- Recipe Details Page --------------------
+// -------------------- Recipe Detail Page --------------------
 const recipeDetailDiv = document.getElementById("recipeDetail");
 
 if (recipeDetailDiv) {
@@ -172,7 +180,7 @@ if (recipeDetailDiv) {
   if (!recipeId) {
     recipeDetailDiv.innerHTML = "<p>Invalid recipe ID.</p>";
   } else {
-    fetch(`https://api.spoonacular.com/recipes/${recipeId}/information?apiKey=fbef567962a54a2faf62c8b6ff833370`)
+    fetch(`https://api.spoonacular.com/recipes/${recipeId}/information?apiKey=${SPOONACULAR_API_KEY}`)
       .then((res) => res.json())
       .then((data) => {
         recipeDetailDiv.innerHTML = `
@@ -184,7 +192,7 @@ if (recipeDetailDiv) {
 
             <h3>🧂 Ingredients:</h3>
             <ul>
-              ${data.extendedIngredients.map((ing) => `<li>${ing.original}</li>`).join("")}
+              ${data.extendedIngredients.map(ing => `<li>${ing.original}</li>`).join("")}
             </ul>
 
             <h3>👨‍🍳 Instructions:</h3>
@@ -196,7 +204,7 @@ if (recipeDetailDiv) {
       })
       .catch((err) => {
         console.error("Error fetching recipe:", err);
-        recipeDetailDiv.innerHTML = "<p>Failed to load recipe.</p>";
+        recipeDetailDiv.innerHTML = "<p>Failed to load recipe details. Please try again later.</p>";
       });
   }
 }
