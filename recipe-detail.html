@@ -1,55 +1,16 @@
-<!-- recipe-detail.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Recipe Details</title>
-  <link rel="stylesheet" href="recipes-style.css">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-    }
-    img {
-      width: 100%;
-      max-width: 400px;
-      border-radius: 10px;
-    }
-    .container {
-      max-width: 600px;
-      margin: auto;
-    }
-  </style>
+  <link rel="stylesheet" href="recipes-style.css" />
 </head>
 <body>
-  <div class="container">
-    <h1 id="recipeTitle"></h1>
-    <img id="recipeImage" />
-    <p><strong>Ready in:</strong> <span id="readyTime"></span> minutes</p>
-    <p><strong>Servings:</strong> <span id="servings"></span></p>
-    <h3>Instructions</h3>
-    <p id="instructions"></p>
-  </div>
+  <main class="container">
+    <div id="recipeDetail">Loading...</div>
+  </main>
 
-  <script>
-    const params = new URLSearchParams(window.location.search);
-    const recipeId = params.get('id');
-    const apiKey = "fbef567962a54a2faf62c8b6ff833370";
-
-    fetch(`https://api.spoonacular.com/recipes/${recipeId}/information?apiKey=${apiKey}`)
-      .then(res => res.json())
-      .then(data => {
-        document.getElementById("recipeTitle").innerText = data.title;
-        document.getElementById("recipeImage").src = data.image;
-        document.getElementById("readyTime").innerText = data.readyInMinutes;
-        document.getElementById("servings").innerText = data.servings;
-        document.getElementById("instructions").innerHTML = data.instructions || "No instructions provided.";
-      })
-      .catch(err => {
-        console.error(err);
-        document.body.innerHTML = "<p>Failed to load recipe details. Please try again later.</p>";
-      });
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
