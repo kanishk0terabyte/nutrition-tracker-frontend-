@@ -1,210 +1,136 @@
+// API Endpoints
 const API_URL = 'https://nutrition-tracker-backend-bxb5.onrender.com/api';
-const SPOONACULAR_API_KEY = 'fbef567962a54a2faf62c8b6ff833370';
+const SPOON_URL = 'https://api.spoonacular.com/recipes';
+const SPOON_KEY = 'fbef567962a54a2faf62c8b6ff833370';
 
-// -------------------- Register --------------------
-const registerForm = document.getElementById("register-form");
-if (registerForm) {
-  registerForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const name = registerForm[0].value;
-    const email = registerForm[1].value;
-    const password = registerForm[2].value;
-    const confirm = registerForm[3].value;
+let pantry = [];
 
-    if (password !== confirm) {
-      alert("Passwords do not match!");
-      return;
-    }
+// — Auth (login/register pages must call these on form submit) —
+function registerUser(e) {
+  e.preventDefault();
+  const name = e.target.name.value.trim();
+  const email = e.target.email.value.trim();
+  const pass = e.target.password.value;
+  fetch(`${API_URL}/register`, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({name,email,password:pass})
+  })
+  .then(r=>r.json()).then(d=>{
+    if(d.token){ localStorage.setItem('token',d.token); window.location='pantry.html'; }
+    else alert(d.message||'Register failed');
+  });
+}
 
-    try {
-      const response = await fetch(`${API_URL}/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+function loginUser(e) {
+  e.preventDefault();
+  const email = e.target.email.value.trim();
+  const pass = e.target.password.value;
+  fetch(`${API_URL}/login`, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({email,password:pass})
+  })
+  .then(r=>r.json()).then(d=>{
+    if(d.token){ localStorage.setItem('token',d.token); window.location='pantry.html'; }
+    else alert(d.message||'Login failed');
+  });
+}
+
+// — Logout button on all pages —
+document.getElementById('logout')?.addEventListener('click', () => {
+  localStorage.removeItem('token');
+  window.location = 'login.html';
+});
+
+// — Pantry page functions —
+function addIngredient(){
+  const inp = document.getElementById('ingredientInput');
+  const v = inp.value.trim();
+  if(!v) return;
+  pantry.push(v);
+  localStorage.setItem('pantry',JSON.stringify(pantry));
+  inp.value='';
+  displayPantry();
+}
+
+function displayPantry(){
+  const list = document.getElementById('pantryList');
+  list.innerHTML = '';
+  pantry.forEach((it,i)=>{
+    const div = document.createElement('div');
+    div.className='pantry-item';
+    div.innerHTML = `${it} <button onclick="removeIngredient(${i})">x</button>`;
+    list.appendChild(div);
+  });
+}
+
+function removeIngredient(i){
+  pantry.splice(i,1);
+  localStorage.setItem('pantry',JSON.stringify(pantry));
+  displayPantry();
+}
+
+function submitPantry(){
+  if(pantry.length===0){ alert('Add ingredients first'); return; }
+  window.location='recipes.html';
+}
+
+// — Recipes page —
+function loadRecipes(){
+  pantry = JSON.parse(localStorage.getItem('pantry'))||[];
+  const ctr = document.getElementById('recipeContainer');
+  if(!ctr) return;
+  fetch(`${SPOON_URL}/findByIngredients?ingredients=${pantry.join(',')}&number=10&apiKey=${SPOON_KEY}`)
+    .then(r=>r.json()).then(data=>{
+      ctr.innerHTML='';
+      data.forEach(r=>{
+        const c = document.createElement('div');
+        c.className='recipe-card';
+        c.innerHTML = `<img src="${r.image}" alt="${r.title}"><h3>${r.title}</h3>`;
+        c.onclick = ()=>{ 
+          localStorage.setItem('selectedRecipeId',r.id);
+          window.location='recipe-detail.html';
+        };
+        ctr.appendChild(c);
       });
-
-      const data = await response.json();
-      if (response.ok) {
-        localStorage.setItem("token", data.token);
-        alert("Registered successfully!");
-        window.location.href = "pantry.html";
-      } else {
-        alert(data.message || "Registration failed!");
-      }
-    } catch (err) {
-      alert("Server error!");
-      console.error(err);
-    }
-  });
+    })
+    .catch(e=>{ ctr.innerHTML='<p>Error loading recipes.</p>'; console.error(e); });
 }
 
-// -------------------- Login --------------------
-const loginForm = document.getElementById("login-form");
-if (loginForm) {
-  loginForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const email = loginForm[0].value;
-    const password = loginForm[1].value;
-
-    try {
-      const response = await fetch(`${API_URL}/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        localStorage.setItem("token", data.token);
-        alert("Login successful!");
-        window.location.href = "pantry.html";
-      } else {
-        alert(data.message || "Login failed!");
-      }
-    } catch (err) {
-      alert("Server error!");
-      console.error(err);
-    }
-  });
-}
-
-// -------------------- Pantry --------------------
-const token = localStorage.getItem("token");
-if (window.location.pathname.includes("pantry.html") && !token) {
-  window.location.href = "login.html";
-}
-
-const addForm = document.getElementById("addIngredientForm");
-const pantryList = document.getElementById("pantryList");
-
-function renderPantry() {
-  if (!pantryList) return;
-  pantryList.innerHTML = "";
-  const pantry = JSON.parse(localStorage.getItem("pantry")) || [];
-
-  pantry.forEach((item, index) => {
-    const li = document.createElement("li");
-    li.innerHTML = `
-      ${item.ingredient} - ${item.quantity}
-      <button class='delete-btn' data-index='${index}'>❌</button>
-    `;
-    pantryList.appendChild(li);
-  });
-
-  document.querySelectorAll(".delete-btn").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      const index = e.target.dataset.index;
-      const pantry = JSON.parse(localStorage.getItem("pantry")) || [];
-      pantry.splice(index, 1);
-      localStorage.setItem("pantry", JSON.stringify(pantry));
-      renderPantry();
-    });
-  });
-}
-
-if (addForm) {
-  renderPantry();
-  addForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const ingredient = document.getElementById("ingredient").value.trim();
-    const quantity = document.getElementById("quantity").value.trim();
-
-    if (ingredient && quantity) {
-      const pantry = JSON.parse(localStorage.getItem("pantry")) || [];
-      pantry.push({ ingredient, quantity });
-      localStorage.setItem("pantry", JSON.stringify(pantry));
-
-      addForm.reset();
-      renderPantry();
-    }
-  });
-}
-
-// -------------------- Logout --------------------
-const logoutBtn = document.getElementById("logoutBtn");
-if (logoutBtn) {
-  logoutBtn.addEventListener("click", () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("pantry");
-    alert("Logged out!");
-    window.location.href = "login.html";
-  });
-}
-
-// -------------------- Go to Recipes --------------------
-const submitBtn = document.getElementById("submitBtn");
-if (submitBtn) {
-  submitBtn.addEventListener("click", () => {
-    window.location.href = "recipes.html";
-  });
-}
-
-// -------------------- Recipes Page --------------------
-const recipeResults = document.getElementById("recipeResults");
-if (recipeResults) {
-  const pantry = JSON.parse(localStorage.getItem("pantry")) || [];
-  const ingredients = pantry.map(item => item.ingredient).join(",");
-
-  fetch(`https://api.spoonacular.com/recipes/findByIngredients?ingredients=${ingredients}&number=10&ranking=1&ignorePantry=true&apiKey=${SPOONACULAR_API_KEY}`)
-    .then(res => res.json())
-    .then(data => {
-      if (data.length === 0) {
-        recipeResults.innerHTML = "<p>No recipes found. Try adding more ingredients.</p>";
-        return;
-      }
-
-      recipeResults.innerHTML = `
-        <div class='recipe-list'>
-          ${data.map((recipe, index) => `
-            <div class='recipe-card' onclick="window.location.href='recipe-detail.html?id=${recipe.id}'">
-              <strong>${index + 1}. ${recipe.title}</strong>
-              <img src="${recipe.image}" alt="${recipe.title}"/>
-            </div>
-          `).join("")}
-        </div>
+// — Recipe Detail page —
+function loadRecipeDetails(){
+  const id = localStorage.getItem('selectedRecipeId');
+  const cont = document.getElementById('recipeDetails');
+  if(!id||!cont) return;
+  fetch(`${SPOON_URL}/${id}/information?apiKey=${SPOON_KEY}`)
+    .then(r=>r.json()).then(d=>{
+      cont.innerHTML=`
+        <h2>${d.title}</h2>
+        <img src="${d.image}" alt="${d.title}" class="detail-image"/>
+        <p><strong>Ready in:</strong> ${d.readyInMinutes} minutes</p>
+        <p><strong>Servings:</strong> ${d.servings}</p>
+        <h3>Ingredients:</h3>
+        <ul>${d.extendedIngredients.map(i=>`<li>${i.original}</li>`).join('')}</ul>
+        <h3>Instructions:</h3>
+        <p>${d.instructions||'No instructions.'}</p>
       `;
     })
-    .catch(err => {
-      console.error("API Error:", err);
-      recipeResults.innerHTML = "<p>Failed to fetch recipes. Please try again.</p>";
-    });
+    .catch(e=>{ cont.innerHTML='<p>Failed to load details.</p>'; console.error(e); });
 }
 
-// -------------------- Recipe Detail Page --------------------
-const recipeDetailDiv = document.getElementById("recipeDetail");
-
-if (recipeDetailDiv) {
-  const params = new URLSearchParams(window.location.search);
-  const recipeId = params.get("id");
-
-  if (!recipeId) {
-    recipeDetailDiv.innerHTML = "<p>Invalid recipe ID.</p>";
-  } else {
-    fetch(`https://api.spoonacular.com/recipes/${recipeId}/information?apiKey=${SPOONACULAR_API_KEY}`)
-      .then((res) => res.json())
-      .then((data) => {
-        recipeDetailDiv.innerHTML = `
-          <div class="recipe-detail-card">
-            <h2>${data.title}</h2>
-            <img src="${data.image}" alt="${data.title}" />
-            <p><strong>⏱ Ready in:</strong> ${data.readyInMinutes} minutes</p>
-            <p><strong>🍽 Servings:</strong> ${data.servings}</p>
-
-            <h3>🧂 Ingredients:</h3>
-            <ul>
-              ${data.extendedIngredients.map(ing => `<li>${ing.original}</li>`).join("")}
-            </ul>
-
-            <h3>👨‍🍳 Instructions:</h3>
-            <p>${data.instructions || "No instructions provided."}</p>
-
-            <button onclick="window.history.back()" class="back-btn">⬅ Back to Recipes</button>
-          </div>
-        `;
-      })
-      .catch((err) => {
-        console.error("Error fetching recipe:", err);
-        recipeDetailDiv.innerHTML = "<p>Failed to load recipe details. Please try again later.</p>";
-      });
+// — Page init routing —
+const page = window.location.pathname.split('/').pop();
+const token = localStorage.getItem('token');
+if(!['login.html','register.html'].includes(page) && !token) {
+  window.location='login.html';
+} else {
+  if(page==='pantry.html'){
+    pantry=JSON.parse(localStorage.getItem('pantry'))||[];
+    displayPantry();
   }
+  if(page==='recipes.html') loadRecipes();
+  if(page==='recipe-detail.html') loadRecipeDetails();
+  if(page==='login.html') document.querySelector('form')?.addEventListener('submit',loginUser);
+  if(page==='register.html') document.querySelector('form')?.addEventListener('submit',registerUser);
 }
