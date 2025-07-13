@@ -1,12 +1,11 @@
+// Set your backend API URL  
 const API_URL = 'https://nutrition-tracker-backend-bxb5.onrender.com/api';
-const SPOONACULAR_KEY = 'fbef567962a54a2faf62c8b6ff833370';
 
 // -------------------- Register --------------------
 const registerForm = document.getElementById("register-form");
 if (registerForm) {
   registerForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-
     const name = registerForm[0].value;
     const email = registerForm[1].value;
     const password = registerForm[2].value;
@@ -44,7 +43,6 @@ const loginForm = document.getElementById("login-form");
 if (loginForm) {
   loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-
     const email = loginForm[0].value;
     const password = loginForm[1].value;
 
@@ -86,9 +84,7 @@ function renderPantry() {
 
   pantry.forEach((item, index) => {
     const li = document.createElement("li");
-    li.innerHTML = `
-      ${item.ingredient} - ${item.quantity}
-      <button class='delete-btn' data-index='${index}'>❌</button>`;
+    li.innerHTML = `${item.ingredient} - ${item.quantity} <button class='delete-btn' data-index='${index}'>❌</button>`;
     pantryList.appendChild(li);
   });
 
@@ -144,21 +140,19 @@ if (recipeResults) {
   const pantry = JSON.parse(localStorage.getItem("pantry")) || [];
   const ingredients = pantry.map(item => item.ingredient).join(",");
 
-  fetch(`https://api.spoonacular.com/recipes/findByIngredients?ingredients=${ingredients}&number=10&ranking=1&ignorePantry=true&apiKey=${SPOONACULAR_KEY}`)
+  fetch(`https://api.spoonacular.com/recipes/findByIngredients?ingredients=${ingredients}&number=10&ranking=1&ignorePantry=true&apiKey=fbef567962a54a2faf62c8b6ff833370`)
     .then(res => res.json())
     .then(data => {
-      if (!data || data.length === 0) {
+      if (data.length === 0) {
         recipeResults.innerHTML = "<p>No recipes found. Try adding more ingredients.</p>";
         return;
       }
 
       recipeResults.innerHTML = "<div class='recipe-list'>" +
         data.map((recipe, index) => `
-          <div class='recipe-card'>
-            <a href="recipe-detail.html?id=${recipe.id}">
-              <strong>${index + 1}. ${recipe.title}</strong><br/>
-              <img src="${recipe.image}" alt="${recipe.title}" />
-            </a>
+          <div class='recipe-card' onclick="window.location.href='recipe-detail.html?id=${recipe.id}'">
+            <strong>${index + 1}. ${recipe.title}</strong>
+            <img src="${recipe.image}" alt="${recipe.title}"/>
           </div>
         `).join("") + "</div>";
     })
@@ -166,4 +160,43 @@ if (recipeResults) {
       console.error("API Error:", err);
       recipeResults.innerHTML = "<p>Failed to fetch recipes. Please try again.</p>";
     });
+}
+
+// -------------------- Recipe Details Page --------------------
+const recipeDetailDiv = document.getElementById("recipeDetail");
+
+if (recipeDetailDiv) {
+  const params = new URLSearchParams(window.location.search);
+  const recipeId = params.get("id");
+
+  if (!recipeId) {
+    recipeDetailDiv.innerHTML = "<p>Invalid recipe ID.</p>";
+  } else {
+    fetch(`https://api.spoonacular.com/recipes/${recipeId}/information?apiKey=fbef567962a54a2faf62c8b6ff833370`)
+      .then((res) => res.json())
+      .then((data) => {
+        recipeDetailDiv.innerHTML = `
+          <div class="recipe-detail-card">
+            <h2>${data.title}</h2>
+            <img src="${data.image}" alt="${data.title}" />
+            <p><strong>⏱ Ready in:</strong> ${data.readyInMinutes} minutes</p>
+            <p><strong>🍽 Servings:</strong> ${data.servings}</p>
+
+            <h3>🧂 Ingredients:</h3>
+            <ul>
+              ${data.extendedIngredients.map((ing) => `<li>${ing.original}</li>`).join("")}
+            </ul>
+
+            <h3>👨‍🍳 Instructions:</h3>
+            <p>${data.instructions || "No instructions provided."}</p>
+
+            <button onclick="window.history.back()" class="back-btn">⬅ Back to Recipes</button>
+          </div>
+        `;
+      })
+      .catch((err) => {
+        console.error("Error fetching recipe:", err);
+        recipeDetailDiv.innerHTML = "<p>Failed to load recipe.</p>";
+      });
+  }
 }
