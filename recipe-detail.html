@@ -1,15 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Recipe Details</title>
-  <link rel="stylesheet" href="recipes-style.css" />
+  <link rel="stylesheet" href="recipes-style.css">
 </head>
 <body>
-  <main class="container">
-    <div id="recipeDetail">Loading recipe details...</div>
+  <header>
+    <button onclick="history.back()">Back to Recipes</button>
+    <h1>Recipe Details</h1>
+  </header>
+
+  <main id="recipeDetails" class="details-container">
+    <!-- Details injected here -->
   </main>
+
+  <button id="logout">Logout</button>
   <script src="script.js"></script>
 </body>
 </html>
