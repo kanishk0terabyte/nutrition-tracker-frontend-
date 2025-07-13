@@ -1,3 +1,4 @@
+<!-- 📍 Update: Correct backend URL added -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,7 +7,6 @@
   <title>Login - Nutrition Tracker</title>
   <link rel="stylesheet" href="style.css" />
   <style>
-    /* Basic fallback styles if style.css not loading */
     body {
       font-family: Arial, sans-serif;
       background-color: #f3f3f3;
@@ -99,7 +99,6 @@
     </div>
   </div>
 
-  <!-- Optional: Add your JS here -->
   <script>
     document.getElementById('login-form').addEventListener('submit', async function(e) {
       e.preventDefault();
@@ -107,7 +106,7 @@
       const password = e.target.password.value;
 
       try {
-        const res = await fetch('https://your-backend-url.com/api/login', {
+        const res = await fetch('https://nutrition-tracker-backend-bxb5.onrender.com/api/login', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -118,7 +117,7 @@
         const data = await res.json();
         if (res.ok) {
           localStorage.setItem('token', data.token);
-          window.location.href = 'pantry.html'; // redirect after login
+          window.location.href = 'pantry.html'; // ✅ redirect after login
         } else {
           alert(data.message || 'Login failed');
         }
