@@ -1,4 +1,5 @@
 const API_URL = 'https://nutrition-tracker-backend-bxb5.onrender.com/api';
+const SPOONACULAR_KEY = 'fbef567962a54a2faf62c8b6ff833370';
 
 // -------------------- Register --------------------
 const registerForm = document.getElementById("register-form");
@@ -85,7 +86,9 @@ function renderPantry() {
 
   pantry.forEach((item, index) => {
     const li = document.createElement("li");
-    li.innerHTML = `${item.ingredient} - ${item.quantity} <button class='delete-btn' data-index='${index}'>❌</button>`;
+    li.innerHTML = `
+      ${item.ingredient} - ${item.quantity}
+      <button class='delete-btn' data-index='${index}'>❌</button>`;
     pantryList.appendChild(li);
   });
 
@@ -141,10 +144,10 @@ if (recipeResults) {
   const pantry = JSON.parse(localStorage.getItem("pantry")) || [];
   const ingredients = pantry.map(item => item.ingredient).join(",");
 
-  fetch(`https://api.spoonacular.com/recipes/findByIngredients?ingredients=${ingredients}&number=10&ranking=1&ignorePantry=true&apiKey=fbef567962a54a2faf62c8b6ff833370`)
+  fetch(`https://api.spoonacular.com/recipes/findByIngredients?ingredients=${ingredients}&number=10&ranking=1&ignorePantry=true&apiKey=${SPOONACULAR_KEY}`)
     .then(res => res.json())
     .then(data => {
-      if (data.length === 0) {
+      if (!data || data.length === 0) {
         recipeResults.innerHTML = "<p>No recipes found. Try adding more ingredients.</p>";
         return;
       }
@@ -152,8 +155,10 @@ if (recipeResults) {
       recipeResults.innerHTML = "<div class='recipe-list'>" +
         data.map((recipe, index) => `
           <div class='recipe-card'>
-            <strong>${index + 1}. ${recipe.title}</strong>
-            <img src="${recipe.image}" alt="${recipe.title}"/>
+            <a href="recipe-detail.html?id=${recipe.id}">
+              <strong>${index + 1}. ${recipe.title}</strong><br/>
+              <img src="${recipe.image}" alt="${recipe.title}" />
+            </a>
           </div>
         `).join("") + "</div>";
     })
