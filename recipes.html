@@ -7,17 +7,15 @@
   <link rel="stylesheet" href="recipes-style.css">
 </head>
 <body>
-  <main class="container">
-    <h1>🍽️ AI Suggested Recipes</h1>
-    <div id="recipeResults">Loading recipes...</div>
+  <header>
+    <h1>Recipes</h1>
+  </header>
 
-    <div class="veg-gallery">
-      <img src="https://cdn-icons-png.flaticon.com/512/135/135620.png" alt="Tomato">
-      <img src="https://cdn-icons-png.flaticon.com/512/590/590685.png" alt="Broccoli">
-      <img src="https://cdn-icons-png.flaticon.com/512/590/590689.png" alt="Carrot">
-      <img src="https://cdn-icons-png.flaticon.com/512/590/590682.png" alt="Spinach">
-    </div>
+  <main>
+    <div id="recipeContainer" class="recipe-container"></div>
   </main>
+
+  <button id="logout">Logout</button>
   <script src="script.js"></script>
 </body>
 </html>
